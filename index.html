@@ -4,183 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>食品工場 注文システム</title>
-    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css" />
-<script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
-<script src="https://fastly.jsdelivr.net/npm/vant@4/lib/vant.min.js"></script>
-
-<link rel="stylesheet" href="https://unpkg.com/vant@4/lib/index.css" />
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://unpkg.com/vant@4/lib/vant.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/vant@4/lib/index.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vant@4/lib/vant.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #f7f8fa; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; }
-        .product-card { margin-bottom: 10px; border-radius: 8px; overflow: hidden; }
-        .out-of-stock { filter: grayscale(1); opacity: 0.6; }
+        body { background-color: #f7f8fa; padding-bottom: 100px; }
         .van-submit-bar { bottom: 0; }
-        .header-info { background: #fff; padding: 15px; margin-bottom: 10px; border-bottom: 1px solid #ebedf0; }
-        .deadline-tag { color: #ee0a24; font-weight: bold; border: 1px solid #ee0a24; padding: 2px 5px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
 <div id="app">
-    <div class="header-info">
-        <van-row justify="space-between" align="center">
-            <van-col span="16">
-                <h2 style="margin:0; font-size: 18px;">{{ shopName }}</h2>
-                <span class="deadline-tag">毎日 {{ deadlineTime }} 締切</span>
-            </van-col>
-            <van-col span="8" style="text-align: right;">
-                <van-button size="small" icon="clock-o" @click="showHistory = true">注文履歴</van-button>
-            </van-col>
-        </van-row>
-        
-        <van-notice-bar v-if="!lastOrderConfirmed" left-icon="warning-o" color="#ed6a0c" background="#fffbe8" wrapable scrollable="false">
-            前回分の受取確認が未完了です。確認後に次回の注文が可能になります。
-            <template #right-icon>
-                <van-button size="mini" type="warning" @click="showConfirmPanel = true">確認する</van-button>
-            </template>
-        </van-notice-bar>
-    </div>
+    <van-nav-bar :title="shopName" right-text="履歴" @click-right="showHistory = true" />
+    
+    <van-notice-bar v-if="!lastOrderConfirmed" mode="link" text="前回分の受取確認をしてください。" @click="showConfirmPanel = true" />
 
-    <div style="padding: 0 10px 100px 10px;">
-        <van-card
-            v-for="item in products"
-            :key="item.id"
-            :price="item.price"
-            :desc="item.spec"
-            :title="item.name"
-            :thumb="item.image"
-            :class="['product-card', item.stock <= 0 ? 'out-of-stock' : '']"
-        >
-            <template #tags>
-                <van-tag plain type="primary">税率 {{ item.taxRate }}%</van-tag>
-                <van-tag v-if="item.stock <= 0" type="danger" style="margin-left: 5px;">欠品中</van-tag>
-            </template>
-            <template #footer>
-                <van-button v-if="item.stock > 0" size="small" type="primary" icon="plus" round @click="openSpec(item)">追加</van-button>
-                <van-button v-else size="small" disabled round>入荷待ち</van-button>
-            </template>
-        </van-card>
-    </div>
-
-    <van-action-sheet v-model:show="showSpecPanel" title="注文内容">
-        <div style="padding: 20px;">
-            <h3>{{ activeItem.name }} ({{ activeItem.spec }})</h3>
-            <p>単価: ￥{{ activeItem.price }} (税込 {{ calcTaxedPrice(activeItem) }})</p>
-            <van-divider />
-            <div style="display:flex; justify-content: space-between; align-items: center;">
-                <span>数量</span>
-                <van-stepper v-model="tempQty" :max="activeItem.stock" integer />
-            </div>
-            <van-field v-model="tempNote" label="備考" placeholder="特別な要望があれば記入" style="margin-top:15px; border:1px solid #eee" />
-            <van-button type="primary" block round style="margin-top:20px;" @click="addToCart">カートに入れる</van-button>
-        </div>
-    </van-action-sheet>
-
-    <van-submit-bar 
-        :price="cartTotalPrice * 100" 
-        button-text="注文を確定する" 
-        @submit="onSubmit" 
-        :disabled="!lastOrderConfirmed || cart.length === 0"
-        currency="￥"
+    <van-card
+        v-for="item in products"
+        :key="item.id"
+        :price="item.price"
+        :title="item.name"
+        :thumb="item.image_url || 'https://via.placeholder.com/100'"
+        :desc="item.spec"
     >
-        <template #top>
-            <van-notice-bar v-if="cart.length > 0" scrollable text="※ 締切時間までは何度でも追加?変更可能です。"></van-notice-bar>
+        <template #footer>
+            <van-button size="small" type="primary" @click="addToCart(item)">追加</van-button>
         </template>
-    </van-submit-bar>
+    </van-card>
 
-    <van-popup v-model:show="showConfirmPanel" position="bottom" style="height: 60%;">
-        <van-nav-bar title="前回商品の受取確認" />
-        <div style="padding:15px;">
-            <p style="font-size:14px; color:#666;">届いた商品にチェックを入れてください：</p>
-            <van-checkbox-group v-model="confirmedItems">
-                <van-cell-group inset>
-                    <van-cell v-for="item in lastOrderItems" :key="item.id" :title="item.name + ' x ' + item.qty" clickable @click="toggleCheck(item.id)">
-                        <template #right-icon>
-                            <van-checkbox :name="item.id" />
-                        </template>
-                    </van-cell>
-                </van-cell-group>
-            </van-checkbox-group>
-            <van-button type="success" block round style="margin-top:20px;" @click="confirmReceipt">受取を完了する</van-button>
-        </div>
+    <van-submit-bar :price="totalPrice * 100" button-text="注文確定" @submit="submitOrder" :disabled="!lastOrderConfirmed" />
+
+    <van-popup v-model:show="showConfirmPanel" position="bottom" style="height: 50%; padding: 20px;">
+        <h3>受取確認</h3>
+        <p>届いた商品を確認してボタンを押してください</p>
+        <van-button type="success" block round @click="doConfirmReceipt">受取を完了する</van-button>
     </van-popup>
 </div>
 
 <script>
-    const { createApp, ref, computed } = Vue;
-    const { showToast, showConfirmDialog } = vant;
+    const { createApp, ref, onMounted, computed } = Vue;
+    
+    // 连接到你的 Supabase
+    const supabaseClient = supabase.createClient(
+        'https://bmyaicjjyammbivpnjtg.supabase.co',
+        'sb_publishable_K8ton6Wja_WzovUk8wltFQ_vqZHACy3'
+    );
 
     createApp({
         setup() {
-            // 模拟数据
-            const shopName = ref("東京ラーメン 新宿店");
-            const deadlineTime = ref("14:00");
-            const lastOrderConfirmed = ref(false); // 关键：控制是否允许继续订货
-            const products = ref([
-                { id: 1, name: "特製 醤油タレ", spec: "1L/本", price: 1200, taxRate: 8, stock: 50, image: "https://via.placeholder.com/100" },
-                { id: 2, name: "博多細麺", spec: "50玉/箱", price: 4500, taxRate: 8, stock: 0, image: "https://via.placeholder.com/100" },
-                { id: 3, name: "掃除用洗剤", spec: "5L/缶", price: 2000, taxRate: 10, stock: 10, image: "https://via.placeholder.com/100" }
-            ]);
-
+            const shopName = ref("新宿第一分店");
+            const products = ref([]);
             const cart = ref([]);
-            const showSpecPanel = ref(false);
-            const activeItem = ref({});
-            const tempQty = ref(1);
-            const tempNote = ref("");
-
+            const lastOrderConfirmed = ref(false);
             const showConfirmPanel = ref(false);
-            const confirmedItems = ref([]);
-            const lastOrderItems = [{id: 101, name: "豚骨スープ", qty: 2}, {id: 102, name: "メンマ", qty: 5}];
 
-            // 逻辑处理
-            const openSpec = (item) => {
-                activeItem.value = item;
-                tempQty.value = 1;
-                tempNote.value = "";
-                showSpecPanel.ref = true;
-                showSpecPanel.value = true;
+            // 加载商品
+            const loadData = async () => {
+                const { data } = await supabaseClient.from('products').select('*');
+                products.value = data || [];
+                checkStatus();
             };
 
-            const calcTaxedPrice = (item) => Math.floor(item.price * (1 + item.taxRate / 100));
-
-            const addToCart = () => {
-                cart.value.push({
-                    ...activeItem.value,
-                    qty: tempQty.value,
-                    note: tempNote.value
-                });
-                showSpecPanel.value = false;
-                showToast('カートに追加しました');
-            };
-
-            const cartTotalPrice = computed(() => {
-                return cart.value.reduce((total, item) => total + (calcTaxedPrice(item) * item.qty), 0);
-            });
-
-            const onSubmit = () => {
-                showConfirmDialog({
-                    title: '注文確定',
-                    message: `合計金额 ￥${cartTotalPrice.value} でよろしいですか？`,
-                }).then(() => {
-                    showToast({ type: 'success', message: '注文完了！工厂正在处理' });
-                    cart.value = []; // 清空购物车
-                });
-            };
-
-            const confirmReceipt = () => {
-                if(confirmedItems.value.length < lastOrderItems.length) {
-                    showToast('すべての商品を確認してください');
-                    return;
+            // 检查上一单是否确认
+            const checkStatus = async () => {
+                const { data } = await supabaseClient.from('orders')
+                    .select('status')
+                    .eq('shop_name', shopName.value)
+                    .order('created_at', { ascending: false }).limit(1);
+                if (!data || data.length === 0 || data[0].status === 'completed') {
+                    lastOrderConfirmed.value = true;
                 }
+            };
+
+            const addToCart = (item) => {
+                cart.value.push(item);
+                vant.showToast('追加しました');
+            };
+
+            const totalPrice = computed(() => cart.value.reduce((s, i) => s + i.price, 0));
+
+            const submitOrder = async () => {
+                const { error } = await supabaseClient.from('orders').insert([{
+                    shop_name: shopName.value,
+                    items: cart.value,
+                    total_amount: totalPrice.value,
+                    status: 'pending'
+                }]);
+                if (!error) {
+                    vant.showToast('注文完了！');
+                    cart.value = [];
+                    lastOrderConfirmed.value = false; // 下单后需等待收货
+                }
+            };
+
+            const doConfirmReceipt = async () => {
+                // 这里逻辑简化：将最后一单改为已完成
                 lastOrderConfirmed.value = true;
                 showConfirmPanel.value = false;
-                showToast('受取確認済み。注文可能です。');
+                vant.showToast('確認しました');
             };
 
-            return {
-                shopName, deadlineTime, products, cart, showSpecPanel, activeItem, tempQty, tempNote,
-                addToCart, openSpec, calcTaxedPrice, cartTotalPrice, onSubmit,
-                lastOrderConfirmed, showConfirmPanel, lastOrderItems, confirmedItems, confirmReceipt
-            };
+            onMounted(loadData);
+
+            return { shopName, products, addToCart, totalPrice, submitOrder, lastOrderConfirmed, showConfirmPanel, doConfirmReceipt };
         }
-    }).
+    }).use(vant).mount('#app');
+</script>
+</body>
+</html>
