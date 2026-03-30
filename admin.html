@@ -2,88 +2,179 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>工場管理后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工場管理后台 - 受注処理</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/vant@4/lib/index.css" />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/vant@4/lib/vant.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        body { background: #f0f2f5; padding: 10px; }
-        .order-card { background: white; margin-bottom: 15px; border-radius: 8px; padding: 15px; border-left: 5px solid #1989fa; }
-        .item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; }
-        .shortage { color: red; text-decoration: line-through; }
+        body { background-color: #f0f2f5; font-family: sans-serif; padding-bottom: 50px; }
+        .order-card { background: #fff; margin: 15px; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .item-box { background: #fafafa; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .shortage-text { color: #ee0a24; font-weight: bold; text-decoration: line-through; }
+        .status-tag { margin-left: 10px; }
     </style>
 </head>
 <body>
 <div id="app">
-    <van-sticky>
-        <van-nav-bar title="工場受注一覧" right-text="更新" @click-right="loadOrders" />
-    </van-sticky>
+    <van-nav-bar title="工場受注センター" left-text="更新" @click-left="loadOrders">
+        <template #right>
+            <van-button size="mini" type="primary" @click="showSettings = true">設定</van-button>
+        </template>
+    </van-nav-bar>
 
-    <div v-for="order in orders" :key="order.id" class="order-card">
-        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-            <strong>店名: {{ order.shop_name }}</strong>
-            <van-tag :type="getStatusType(order.status)">{{ order.status }}</van-tag>
-        </div>
+    <van-tabs v-model:active="activeTab" sticky>
+        <van-tab title="未処理订单">
+            <div v-if="pendingOrders.length === 0" style="text-align:center; padding:50px; color:#999;">新着注文はありません</div>
+            
+            <div v-for="order in pendingOrders" :key="order.id" class="order-card">
+                <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span style="font-size:18px; font-weight:bold;">{{ order.shop_name }}</span>
+                        <div style="font-size:12px; color:#999; margin-top:5px;">受注: {{ formatDate(order.created_at) }}</div>
+                    </div>
+                    <van-tag :type="getStatusType(order.status)" size="medium">{{ order.status }}</van-tag>
+                </div>
 
-        <div v-for="(item, index) in order.items" :key="index" class="item-row">
-            <span :class="{ 'shortage': item.isMissing }">{{ item.name }} x {{ item.qty }}</span>
-            <van-button size="mini" plain type="danger" @click="handleShortage(order, index)">欠品</van-button>
-        </div>
+                <div class="item-box">
+                    <div v-for="(item, idx) in order.items" :key="idx" class="item-row">
+                        <span :class="{'shortage-text': item.qty === 0}">
+                            {{ item.name }} ({{ item.spec }}) <br>
+                            <small>数量: {{ item.qty }}</small>
+                        </span>
+                        <div>
+                            <van-button size="mini" plain type="danger" @click="markAsShortage(order, idx)">欠品</van-button>
+                            <van-button size="mini" plain type="primary" style="margin-left:5px;" @click="editItemQty(order, idx)">修正</van-button>
+                        </div>
+                    </div>
+                    <div v-if="order.note" style="margin-top:10px; font-size:13px; color:#666; border-top:1px solid #eee; padding-top:5px;">
+                        <strong>備考:</strong> {{ order.note }}
+                    </div>
+                </div>
 
-        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
-            <van-button size="small" icon="edit" @click="editOrder(order)">修改</van-button>
-            <van-button size="small" type="primary" @click="completeOrder(order)">确认发货</van-button>
-        </div>
-    </div>
+                <div style="margin-top:15px; display:flex; justify-content: flex-end; gap: 10px;">
+                    <van-button size="small" icon="printer" @click="generatePDF(order)">納品書 PDF</van-button>
+                    <van-button size="small" type="success" @click="updateStatus(order, 'shipping')">配送開始</van-button>
+                </div>
+            </div>
+        </van-tab>
+
+        <van-tab title="配送中/完了">
+            <van-cell v-for="order in historyOrders" :key="order.id" :title="order.shop_name" :label="formatDate(order.created_at)" :value="order.status" />
+        </van-tab>
+    </van-tabs>
+
+    <van-dialog v-model:show="showSettings" title="システム設定" show-cancel-button>
+        <van-field label="截单时间" v-model="deadline" placeholder="例: 14:00" />
+        <div style="padding:15px; font-size:12px; color:#999;">※ 修改后厨师端将同步显示。</div>
+    </van-dialog>
 </div>
 
 <script>
-    const { createApp, ref, onMounted } = Vue;
-    
-    // --- 请替换你的密钥 ---
-    const SUPABASE_URL = 'https://xxxx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbG...';
+    const { createApp, ref, onMounted, computed } = Vue;
+
+    // Supabase 连接
+    const SUPABASE_URL = 'https://bmyaicjjyammbivpnjtg.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_K8ton6Wja_WzovUk8wltFQ_vqZHACy3';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     createApp({
         setup() {
             const orders = ref([]);
+            const activeTab = ref(0);
+            const showSettings = ref(false);
+            const deadline = ref("14:00");
 
+            const pendingOrders = computed(() => orders.value.filter(o => o.status === 'pending' || o.status === '欠品調整中'));
+            const historyOrders = computed(() => orders.value.filter(o => o.status !== 'pending' && o.status !== '欠品調整中'));
+
+            // 加载所有订单
             const loadOrders = async () => {
-                const { data } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
                 orders.value = data || [];
             };
 
-            // 处理欠品逻辑：修改订单中的 items JSON，并写回数据库
-            const handleShortage = async (order, itemIndex) => {
-                const updatedItems = [...order.items];
-                updatedItems[itemIndex].isMissing = true;
-                updatedItems[itemIndex].qty = 0; // 欠品则数量归零
+            // 标记欠品 (数量归零并同步)
+            const markAsShortage = async (order, idx) => {
+                const newItems = [...order.items];
+                newItems[idx].qty = 0;
+                newItems[idx].isShortage = true;
 
-                const { error } = await supabase
-                    .from('orders')
-                    .update({ items: updatedItems, status: '欠品调整中' })
+                const { error } = await supabase.from('orders')
+                    .update({ items: newItems, status: '欠品调整中' })
                     .eq('id', order.id);
-
+                
                 if (!error) {
-                    vant.showToast('欠品情報を更新しました');
-                    loadOrders(); // 重新加载
+                    vant.showToast('欠品として更新しました');
+                    loadOrders();
                 }
             };
 
-            const getStatusType = (s) => {
-                if (s === 'pending') return 'warning';
-                if (s === 'completed') return 'success';
-                return 'primary';
+            // 修改数量
+            const editItemQty = (order, idx) => {
+                vant.showPromptDialog({
+                    title: '数量修正',
+                    message: order.items[idx].name,
+                }).then(async (val) => {
+                    const newItems = [...order.items];
+                    newItems[idx].qty = parseInt(val);
+                    await supabase.from('orders').update({ items: newItems }).eq('id', order.id);
+                    loadOrders();
+                });
             };
+
+            // 更新订单状态 (发货)
+            const updateStatus = async (order, newStatus) => {
+                const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', order.id);
+                if (!error) {
+                    vant.showToast('ステータスを更新しました');
+                    loadOrders();
+                }
+            };
+
+            // 生成 PDF 纳品书
+            const generatePDF = (order) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(22);
+                doc.text("DELIVERY NOTE (納品書)", 105, 20, { align: "center" });
+                
+                doc.setFontSize(12);
+                doc.text(`Shop: ${order.shop_name}`, 20, 40);
+                doc.text(`Order ID: ${order.id.substring(0,8)}`, 20, 50);
+                doc.text(`Date: ${new Date(order.created_at).toLocaleDateString()}`, 20, 60);
+                
+                doc.line(20, 65, 190, 65);
+                
+                let y = 75;
+                order.items.forEach((item, i) => {
+                    const line = `${i+1}. ${item.name} | ${item.spec} | x${item.qty} ${item.qty===0?'(欠品)':''}`;
+                    doc.text(line, 20, y);
+                    y += 10;
+                });
+                
+                doc.line(20, y, 190, y);
+                doc.text(`Total Amount: JPY ${order.total_amount}`, 130, y + 10);
+                
+                doc.save(`Nohinsho_${order.shop_name}.pdf`);
+            };
+
+            const formatDate = (dateStr) => new Date(dateStr).toLocaleString('ja-JP');
+            const getStatusType = (s) => (s === 'pending' ? 'danger' : 'primary');
 
             onMounted(loadOrders);
 
-            return { orders, loadOrders, handleShortage, getStatusType };
+            return { 
+                pendingOrders, historyOrders, activeTab, showSettings, deadline,
+                loadOrders, markAsShortage, editItemQty, updateStatus, generatePDF, 
+                formatDate, getStatusType 
+            };
         }
     }).use(vant).mount('#app');
 </script>
