@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>受発注システム / 订货系统</title>
+<title>受発注システム <span class="zh">/ 订货系统</span></title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,16 +35,16 @@ body.lang-ja .zh { display:none !important; }
 body.lang-zh .ja { display:none !important; }
 body.lang-ja .sep { display:none !important; }
 body.lang-zh .sep { display:none !important; }
-.lang-select{
-  min-width:104px;height:36px;padding:0 34px 0 12px;
-  border-radius:20px;border:1px solid rgba(255,255,255,.38);
-  background:rgba(255,255,255,.18);color:#fff;font-size:13px;font-weight:700;
-  font-family:inherit;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;
-  background-image:linear-gradient(45deg,transparent 50%, rgba(255,255,255,.9) 50%),linear-gradient(135deg, rgba(255,255,255,.9) 50%, transparent 50%);
-  background-position:calc(100% - 16px) 15px, calc(100% - 11px) 15px;
-  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+.lang-btn {
+  display:flex;align-items:center;gap:2px;
+  background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);
+  border-radius:20px;padding:4px 6px;cursor:pointer;flex-shrink:0;
 }
-.lang-select option{color:#111;background:#fff;}
+.lang-btn span {
+  font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);
+  padding:3px 8px;border-radius:14px;transition:all .2s;white-space:nowrap;
+}
+.lang-btn span.active { background:white;color:var(--red); }
 
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -295,11 +295,11 @@ tr:hover td{background:var(--bg);}
 .product-card.in-cart{border-color:var(--green);}
 .product-card.out-of-stock{opacity:.5;cursor:not-allowed;}
 .product-img{
-  width:100%;aspect-ratio:1;background:#fff;
+  width:100%;aspect-ratio:1;background:var(--bg2);
   display:flex;align-items:center;justify-content:center;
   font-size:52px;overflow:hidden;
 }
-.product-img img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;background:#fff;}
+.product-img img{width:100%;height:100%;object-fit:cover;}
 .product-info{padding:10px 10px 12px;}
 .product-name{font-size:13px;font-weight:700;margin-bottom:2px;line-height:1.3;}
 .product-name-zh{font-size:11px;color:var(--text3);margin-bottom:4px;}
@@ -377,44 +377,47 @@ tr:hover td{background:var(--bg);}
   transition:border-color .2s;background:white;
 }
 .search-input:focus{outline:none;border-color:var(--red);}
-
-.order-controls-sticky{position:relative;z-index:20;}
-.order-controls-sticky::after{content:'';display:block;height:0;clear:both;}
-.order-controls-sticky.fixed-mobile{position:fixed !important;left:0;right:0;top:54px;z-index:880;background:var(--bg);padding:10px 12px 0;box-shadow:0 4px 16px rgba(0,0,0,.08);}
-.order-controls-placeholder{display:none;height:0;}
-.order-controls-placeholder.active{display:block;}
-
 .filter-select{
   padding:10px 12px;border:2px solid var(--border);border-radius:var(--r-sm);
   font-size:13px;font-family:inherit;background:white;cursor:pointer;
 }
 .filter-select:focus{outline:none;border-color:var(--red);}
 .category-strip{
-  position:relative;top:auto;z-index:1;background:#fff;padding:0 0 8px;margin-bottom:8px;
+  position:sticky;top:58px;z-index:260;background:var(--bg);padding:0 0 10px;margin-bottom:10px;
   border-bottom:1px solid rgba(0,0,0,.04);
   box-shadow:0 1px 0 rgba(0,0,0,.04);
 }
 .category-strip-inner{width:100%;max-width:100%;}
 .category-scroll{
-  display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  padding:0 10px 6px;touch-action:pan-x;overscroll-behavior-x:contain;position:relative;z-index:2;white-space:nowrap;
+  display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  padding:2px 2px 8px;touch-action:pan-x;overscroll-behavior-x:contain;position:relative;z-index:2;white-space:nowrap;
 }
 .category-scroll::-webkit-scrollbar{display:none;}
 .category-pill{
-  position:relative;flex:0 0 auto;min-width:84px;padding:10px 10px 12px;border:none;background:transparent;color:var(--text2);
-  font-size:18px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;text-align:center;
+  position:relative;flex:0 0 auto;padding:12px 18px;border:none;background:transparent;color:var(--text2);
+  font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;
   -webkit-tap-highlight-color:transparent;
 }
 .category-pill::after{
-  content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:52px;height:5px;border-radius:999px;background:transparent;
+  content:'';position:absolute;left:18px;right:18px;bottom:0;height:4px;border-radius:999px;background:transparent;
   transition:all .22s ease;
 }
 .category-pill.active{color:var(--red);}
 .category-pill.active::after{background:var(--red);}
 .modal-product-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
-.category-strip.is-fixed-mobile{position:relative !important;left:auto;top:auto;width:auto;z-index:1;margin:0;padding:0 0 8px;background:#fff;box-shadow:none;}
+.category-strip.is-fixed-mobile{
+  position:fixed !important;
+  left:var(--category-fixed-left, 0px);
+  top:var(--category-fixed-top, 52px);
+  width:var(--category-fixed-width, 100vw);
+  z-index:320;
+  margin:0;
+  padding:0 0 8px;
+  background:var(--bg);
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
 .category-strip-placeholder{display:none;height:0;}
-.category-strip-placeholder.active{display:block;height:var(--category-placeholder-height, 52px);}
+.category-strip-placeholder.active{display:block;height:var(--category-placeholder-height, 56px);}
 .product-grid.slide-in-right{animation:slideInRight .24s ease;}
 .product-grid.slide-in-left{animation:slideInLeft .24s ease;}
 @keyframes slideInRight{from{opacity:.35;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}
@@ -471,54 +474,28 @@ tr:hover td{background:var(--bg);}
 #sigCanvas{border:2px dashed var(--border);border-radius:var(--r-sm);cursor:crosshair;touch-action:none;width:100%;height:120px;background:#fcfcfc;}
 
 
-.success-icon-wrap{display:flex;justify-content:center;margin:4px 0 14px;}
+.success-icon-wrap{display:flex;justify-content:center;margin:6px 0 14px;}
 .success-icon{
-  width:72px;height:72px;border-radius:50%;
-  background:#ecfdf5;color:#16a34a;display:flex;align-items:center;justify-content:center;
-  font-size:38px;font-weight:900;box-shadow:inset 0 0 0 1px rgba(22,163,74,.10);
+  width:84px;height:84px;border-radius:50%;
+  background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);
+  color:var(--red);display:flex;align-items:center;justify-content:center;
+  font-size:42px;box-shadow:inset 0 0 0 1px rgba(37,99,235,.12);
 }
-.success-title{font-size:28px;font-weight:900;text-align:center;color:var(--text);margin-bottom:10px;line-height:1.2;}
-.success-subtitle{font-size:17px;color:var(--text2);text-align:center;line-height:1.65;margin-bottom:18px;}
+.success-title{font-size:22px;font-weight:900;text-align:center;color:var(--text);margin-bottom:8px;}
+.success-subtitle{font-size:13px;color:var(--text2);text-align:center;line-height:1.8;margin-bottom:18px;}
 .success-order-box{
   background:linear-gradient(135deg,#f8fafc 0%,#eff6ff 100%);
-  border:1px solid #dbeafe;border-radius:18px;padding:18px 18px;margin-bottom:16px;
+  border:1px solid #dbeafe;border-radius:16px;padding:16px 18px;margin-bottom:16px;
 }
-.success-order-no{font-size:14px;color:var(--text2);margin-bottom:8px;text-align:center;}
-.success-order-no strong{font-size:32px;color:var(--red);display:block;line-height:1.15;margin-top:2px;}
-.success-list{display:grid;gap:12px;margin-top:12px;}
-.success-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:15px;}
+.success-order-no{font-size:13px;color:var(--text2);margin-bottom:6px;text-align:center;}
+.success-order-no strong{font-size:28px;color:var(--red);display:block;line-height:1.2;}
+.success-list{display:grid;gap:10px;margin-top:10px;}
+.success-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:13px;}
 .success-row .label{color:var(--text2);}
-.success-row .value{color:var(--text);font-weight:800;text-align:right;}
+.success-row .value{color:var(--text);font-weight:700;text-align:right;}
 .success-note{
   background:#fffbeb;border:1px solid #fde68a;color:#92400e;
-  border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.8;margin-bottom:18px;
-}
-.success-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.success-actions .btn{justify-content:center;height:50px;border-radius:14px;font-size:17px;font-weight:800;}
-
-
-.history-note{margin-bottom:12px;white-space:pre-wrap;word-break:break-word;line-height:1.7;}
-.history-items-mobile{display:grid;gap:10px;}
-.history-item-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
-.history-item-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
-.history-item-emoji{font-size:24px;line-height:1;flex-shrink:0;}
-.history-item-name{font-size:16px;font-weight:800;line-height:1.35;word-break:break-word;}
-.history-item-spec{font-size:13px;color:var(--text3);margin-top:4px;}
-.history-item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px;}
-.history-item-grid .cell{background:white;border:1px solid var(--border);border-radius:10px;padding:8px 10px;}
-.history-item-grid .cell .k{font-size:11px;color:var(--text3);margin-bottom:4px;}
-.history-item-grid .cell .v{font-size:15px;font-weight:800;}
-.history-shortage{margin-top:8px;}
-@media(max-width:480px){
-  .nav-inner{padding:0 8px;gap:6px;}
-  .nav-tabs{min-width:0;flex:1;}
-  .nav-tab{padding:12px 8px;font-size:11px;gap:2px;}
-  .nav-right{gap:4px;padding-left:4px;}
-  .lang-select{min-width:88px;height:32px;font-size:12px;padding-left:10px;}
-  
-  .nav-btn{padding:4px 6px;font-size:10px;}
-  .order-controls-sticky{top:52px;}
-  .history-item-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.75;margin-bottom:18px;
 }
 
 /* MISC */
@@ -534,77 +511,6 @@ tr:hover td{background:var(--bg);}
 /* ── TABLET ── */
 @media(max-width:800px){
   .order-layout{grid-template-columns:1fr;}
-
-  .order-controls-sticky{
-    position:sticky;
-    top:54px;
-    z-index:620;
-    background:var(--bg);
-    margin:0 0 10px;
-    padding:8px 0 0;
-    box-shadow:0 2px 10px rgba(0,0,0,.04);
-  }
-  .search-bar{
-    margin:0;
-    padding:0 0 10px;
-    background:var(--bg);
-    position:relative;
-    z-index:2;
-  }
-  .search-input{
-    width:100%;
-    min-width:0;
-    padding:14px 16px;
-    font-size:16px;
-    border-radius:18px;
-    background:#fff;
-  }
-  .category-strip{
-    position:relative;
-    top:auto !important;
-    z-index:1;
-    background:#fff;
-    margin:0;
-    padding:0;
-    border-bottom:1px solid rgba(0,0,0,.04);
-    box-shadow:none;
-  }
-  .category-strip::after{
-    content:'';
-    position:absolute;
-    left:0;
-    bottom:-8px;
-    width:100%;
-    height:8px;
-    background:var(--bg);
-  }
-  .category-strip-inner{background:#fff;}
-  .category-scroll{
-    gap:4px;
-    padding:0 12px 10px;
-    background:#fff;
-  }
-  .category-pill{
-    min-width:84px;
-    padding:10px 8px 12px;
-    font-size:18px;
-  }
-  .product-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
-    width:100%;
-    margin-top:0;
-  }
-  .product-card{width:100%;min-width:0;border-radius:22px;overflow:hidden;}
-  .product-img{
-    aspect-ratio:1;
-    background:#fff;
-  }
-  .product-img img{
-    object-fit:cover;
-    object-position:center center;
-  }
-
   .form-row{grid-template-columns:1fr;}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .modal{padding:20px;}
@@ -615,14 +521,14 @@ tr:hover td{background:var(--bg);}
   #page-order .container{padding-bottom:86px;overflow-x:hidden;}
   .order-layout{gap:12px;}
   .order-layout > div{min-width:0;}
-  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;}
-  .product-card{width:100%;min-width:0;border-radius:20px;overflow:hidden;}
-  .product-info{padding:14px 14px 16px;}
-  .product-name{font-size:18px;line-height:1.35;word-break:break-word;font-weight:800;}
-  .product-name-zh{font-size:14px;}
-  .product-spec{font-size:14px;}
-  .product-price{font-size:22px;}
-  .product-stock{font-size:13px;}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;}
+  .product-card{width:100%;min-width:0;}
+  .product-info{padding:9px 9px 11px;}
+  .product-name{font-size:13px;line-height:1.35;word-break:break-word;}
+  .product-name-zh{font-size:11px;}
+  .product-spec{font-size:11px;}
+  .product-price{font-size:15px;}
+  .product-stock{font-size:10px;}
   /* ★ 购物车 transform折叠方案 ★ */
   .cart-panel{
     position:fixed;bottom:0;left:0;right:0;width:100vw;
@@ -661,39 +567,37 @@ tr:hover td{background:var(--bg);}
 /* ── MOBILE ── */
 @media(max-width:480px){
   /* Nav */
-  .nav-logo{font-size:13px;margin-right:6px;}
+  .nav-logo{font-size:13px;margin-right:8px;}
   .nav-logo small{display:none;}
-  .nav-tab{padding:13px 8px;font-size:12px;gap:3px;min-width:0;}
+  .nav-tab{padding:13px 10px;font-size:12px;gap:3px;}
   .nav-right{gap:6px;padding-left:6px;}
   .nav-user{display:none;}
   .nav-btn{font-size:11px;padding:4px 8px;}
-  .lang-select{min-width:88px;height:32px;font-size:12px;padding-left:10px;}
+  .lang-btn span{padding:3px 6px;font-size:11px;}
 
   /* Products */
-  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;}
-  .product-card{width:100%;min-width:0;border-radius:20px;overflow:hidden;}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;}
+  .product-card{width:100%;min-width:0;}
   .product-img{font-size:40px;}
-  .product-info{padding:14px 14px 16px;}
-  .product-name{font-size:18px;line-height:1.35;word-break:break-word;font-weight:800;}
-  .product-name-zh,.product-spec{font-size:14px;line-height:1.45;color:#8b8b8b;}
-  .product-price{font-size:22px;font-weight:900;margin-top:8px;}
-  .product-stock{font-size:13px;margin-top:8px;}
+  .product-name{font-size:13px;line-height:1.35;word-break:break-word;}
+  .product-price{font-size:15px;}
+  .product-stock{font-size:10px;}
 
   /* Cart (bottom drawer) */
-  .cart-panel{border-radius:18px 18px 0 0;}
-  .cart-header{padding:14px 16px;font-size:18px;cursor:default;font-weight:800;}
+  .cart-panel{border-radius:14px 14px 0 0;}
+  .cart-header{padding:11px 14px;font-size:14px;cursor:default;}
   .cart-panel{transform:translateY(calc(100% - 48px));}
   .cart-body{max-height:45vh;}
   .cart-footer{padding:12px;}
   /* Total bar always visible on mobile */
   #cartTotalBar{padding:10px 14px;}
-  .cart-total-big{font-size:24px;font-weight:900;}
-  .cart-item-name{font-size:14px;}
-  .cart-item-sub{font-size:12px;}
-  .qty-btn{width:28px;height:28px;}
-  .qty-num{font-size:16px;}
-  .cart-line-price{font-size:14px;}
-  .btn-lg{padding:14px 20px;font-size:18px;}
+  .cart-total-big{font-size:18px;}
+  .cart-item-name{font-size:12px;}
+  .cart-item-sub{font-size:11px;}
+  .qty-btn{width:24px;height:24px;}
+  .qty-num{font-size:14px;}
+  .cart-line-price{font-size:12px;}
+  .btn-lg{padding:13px 20px;font-size:14px;}
 
   /* Delivery list */
   .order-item-header{gap:6px;padding:10px 12px;}
@@ -719,20 +623,14 @@ tr:hover td{background:var(--bg);}
   .section-title{font-size:16px;}
   .section-header{flex-wrap:wrap;gap:8px;}
 
-  .success-title{font-size:26px;}
-  .success-subtitle{font-size:16px;}
-  .success-order-no strong{font-size:30px;}
-  .success-note{font-size:13px;}
-  .success-actions{grid-template-columns:1fr;}
-
   /* Buttons */
   .btn-sm{padding:5px 10px;font-size:11px;}
 
   /* Search */
-  .search-bar{gap:8px;margin-bottom:10px;}
+  .search-bar{gap:8px;}
   .search-input{min-width:0;font-size:13px;}
   .filter-select{font-size:12px;padding:8px 10px;}
-  .category-strip{top:auto !important;margin-bottom:0;padding:0 0 8px;background:#fff;z-index:1;overflow:hidden;position:relative !important;}
+  .category-strip{top:52px;margin-bottom:8px;padding:0 0 8px;background:var(--bg);z-index:260;overflow:hidden;position:sticky;}
   #page-order, #page-order .container{overflow:visible !important;}
   body{overflow-x:hidden;}
   html{overflow-x:hidden;}
@@ -835,11 +733,11 @@ tr:hover td{background:var(--bg);}
       <div class="nav-tabs" id="navTabs"></div>
       <div class="nav-right">
         <div class="nav-user" id="navUser"></div>
-        <select class="lang-select" id="langSelect" onchange="setMainLang(this.value)">
-          <option value="ja">日本語</option>
-          <option value="zh">中文</option>
-        </select>
-        <button class="nav-btn" onclick="doLogout()"><span class="ja">ログアウト</span><span class="sep"> / </span><span class="zh">退出</span></button>
+        <div class="lang-btn" id="langBtn" onclick="toggleLang()">
+        <span id="lbJa" class="active">日本語</span>
+        <span id="lbZh">中文</span>
+      </div>
+      <button class="nav-btn" onclick="doLogout()"><span class="ja">ログアウト</span><span class="sep"> / </span><span class="zh">退出</span></button>
       </div>
     </div>
   </nav>
@@ -858,20 +756,18 @@ tr:hover td{background:var(--bg);}
             </div>
             <div style="margin-left:auto;font-size:13px;opacity:.9;" id="cutoffStatus"></div>
           </div>
-          <div class="order-controls-sticky" id="orderControlsSticky">
-            <div class="search-bar">
-              <input class="search-input" placeholder="🔍 商品名検索 / 搜索商品..." data-ph-ja="🔍 商品名検索..." data-ph-zh="🔍 搜索商品..." oninput="filterProducts(this.value)" id="productSearch">
-              <select class="filter-select" id="catFilter" onchange="filterProductsCat(this.value)" style="display:none;">
-                <option value="" id="catFilterAll"><span class="ja">全カテゴリ</span><span class="sep"> / </span><span class="zh">全部</span></option>
-              </select>
-            </div>
-            <div class="category-strip" id="categoryStrip">
-              <div class="category-strip-inner">
-                <div class="category-scroll" id="categoryTabs"></div>
-              </div>
+          <div class="search-bar">
+            <input class="search-input" placeholder="🔍 商品名検索 / 搜索商品..." data-ph-ja="🔍 商品名検索..." data-ph-zh="🔍 搜索商品..." oninput="filterProducts(this.value)" id="productSearch">
+            <select class="filter-select" id="catFilter" onchange="filterProductsCat(this.value)" style="display:none;">
+              <option value="" id="catFilterAll"><span class="ja">全カテゴリ</span><span class="sep"> / </span><span class="zh">全部</span></option>
+            </select>
+          </div>
+          <div class="category-strip" id="categoryStrip">
+            <div class="category-strip-inner">
+              <div class="category-scroll" id="categoryTabs"></div>
             </div>
           </div>
-          <div class="order-controls-placeholder" id="orderControlsPlaceholder"></div>
+          <div class="category-strip-placeholder" id="categoryStripPlaceholder"></div>
           <div class="product-grid" id="productGrid"></div>
         </div>
         <div>
@@ -896,7 +792,7 @@ tr:hover td{background:var(--bg);}
                 <label class="form-label"><span class="ja">備考</span><span class="zh">备注</span></label>
                 <textarea class="form-input" id="orderNote" placeholder="配送時の注意など / 配送注意事项..." style="min-height:56px;font-size:13px;" data-ph-ja="配送時の注意など..." data-ph-zh="配送注意事项..."></textarea>
               </div>
-              <button class="btn btn-red btn-lg" style="width:100%;justify-content:center;" id="orderSubmitBtn" onclick="submitOrder()">📋 <span class="ja">注文する</span><span class="zh">下单</span></button>
+              <button class="btn btn-red btn-lg" style="width:100%;justify-content:center;" onclick="submitOrder()">📋 <span class="ja">注文する</span><span class="zh">下单</span></button>
             </div>
           </div>
         </div>
@@ -1150,7 +1046,7 @@ tr:hover td{background:var(--bg);}
 
 <!-- Order Success Modal -->
 <div class="modal-overlay" id="modalOrderSuccess">
-  <div class="modal" style="max-width:440px;border-radius:24px;padding:28px 22px 22px;">
+  <div class="modal" style="max-width:420px;">
     <div class="success-icon-wrap"><div class="success-icon">✓</div></div>
     <div class="success-title" id="orderSuccessTitle"></div>
     <div class="success-subtitle" id="orderSuccessSubtitle"></div>
@@ -1163,10 +1059,7 @@ tr:hover td{background:var(--bg);}
       </div>
     </div>
     <div class="success-note" id="orderSuccessNote"></div>
-    <div class="success-actions">
-      <button class="btn btn-outline btn-lg" onclick="closeModal('modalOrderSuccess')" id="orderSuccessBtnSecondary"></button>
-      <button class="btn btn-red btn-lg" onclick="goToOrderHistoryFromSuccess()" id="orderSuccessBtnPrimary"></button>
-    </div>
+    <button class="btn btn-red btn-lg" style="width:100%;justify-content:center;" onclick="closeModal('modalOrderSuccess')" id="orderSuccessBtn"></button>
   </div>
 </div>
 
@@ -1191,58 +1084,6 @@ function ls(k, v) {
   if (v === undefined) { try { return JSON.parse(localStorage.getItem('fos_'+k)); } catch { return null; } }
   if (v === null) localStorage.removeItem('fos_'+k);
   else localStorage.setItem('fos_'+k, JSON.stringify(v));
-}
-
-
-function escapeHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function cleanNote(v) {
-  return String(v||'')
-    .replace(/<[^>]*>/g,' ')
-    .replace(/&lt;[^&]*&gt;/g,' ')
-    .replace(/class="[^"]*"/gi,' ')
-    .replace(/style="[^"]*"/gi,' ')
-    .replace(/min-height\s*:\s*\d+px;?/gi,' ')
-    .replace(/font-size\s*:\s*\d+px;?/gi,' ')
-    .replace(/['"]\s*>/g,' ')
-    .replace(/span/gi,' ')
-    .replace(/\s+/g,' ')
-    .trim();
-}
-function isCutoffPassed() {
-  const now = new Date();
-  const [h,m] = String(cutoffTime||'17:00').split(':').map(Number);
-  return now.getHours() > h || (now.getHours()===h && now.getMinutes()>=m);
-}
-function renderHistoryItems(order) {
-  const items = order.order_items || [];
-  if (window.innerWidth <= 1100) {
-    return `<div class="history-items-mobile">${items.map(i=>`
-      <div class="history-item-card" id="hist_row_${i.id}" style="${i.shortage?'background:var(--red-light);border-color:#fca5a5;':''}">
-        <div class="history-item-top" style="margin-bottom:8px;align-items:flex-start;">
-          <div class="history-item-emoji">${i.product_emoji||'📦'}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="history-item-name">${escapeHtml(i.product_name||'')} <span style="font-size:14px;color:var(--text3);font-weight:600;">${escapeHtml(i.product_spec||'')}</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:15px;">
-              <div><span style="color:var(--text3);">${currentLang==='zh'?'数量':'数量'}</span> <strong>×${i.qty}</strong></div>
-              <div><span style="color:var(--text3);">${currentLang==='zh'?'单价':'単価'}</span> <strong>${fmt(i.unit_price)}</strong></div>
-              <div><span style="color:var(--text3);">${currentLang==='zh'?'金额':'金額'}</span> <strong style="color:var(--red);">${fmt(i.unit_price*i.qty)}</strong></div>
-            </div>
-            ${i.shortage?`<div class="history-shortage"><span class="badge badge-red">${currentLang==='zh'?'缺货':'欠品'}${i.shortage_note?'：'+escapeHtml(i.shortage_note):''}</span></div>`:''}
-          </div>
-          <div id="hc_${i.id}" onclick="toggleHistCheck('${i.id}')" style="width:28px;height:28px;border:2px solid #ccc;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;background:white;user-select:none;flex-shrink:0;"></div>
-        </div>
-      </div>`).join('')}</div>`;
-  }
-  return `<div class="table-wrap"><table><thead><tr><th>商品</th><th><span class="ja">規格</span><span class="sep"> / </span><span class="zh">规格</span></th><th>数量</th><th>単価</th><th>金額</th><th><span class="ja">欠品</span><span class="sep"> / </span><span class="zh">缺货</span></th><th style="text-align:center;width:52px;">確認<br><span style="font-size:10px;font-weight:400;color:#aaa;">核对</span></th></tr></thead><tbody>${items.map(i=>`
-      <tr style="${i.shortage?'background:var(--red-light);':''}" id="hist_row_${i.id}">
-        <td style="white-space:normal;word-break:break-word;min-width:110px;">${i.product_emoji||'📦'} ${escapeHtml(i.product_name||'')}</td>
-        <td style="white-space:normal;word-break:break-word;">${escapeHtml(i.product_spec||'')}</td><td>${i.qty}</td>
-        <td>${fmt(i.unit_price)}</td><td>${fmt(i.unit_price*i.qty)}</td>
-        <td>${i.shortage?`<span class="badge badge-red">${currentLang==='zh'?'缺货':'欠品'}${i.shortage_note?'：'+escapeHtml(i.shortage_note):''}</span>`:'—'}</td>
-        <td style="text-align:center;"><div id="hc_${i.id}" onclick="toggleHistCheck('${i.id}')" style="width:28px;height:28px;border:2px solid #ccc;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;background:white;user-select:none;"></div></td>
-      </tr>`).join('')}</tbody></table></div>`;
 }
 
 function saveConfig() {
@@ -1327,30 +1168,24 @@ function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 function showOrderSuccessModal({orderNo,total,merged=false,orderDate=''}) {
-  document.getElementById('orderSuccessTitle').textContent = currentLang==='zh' ? '提交成功' : '送信完了';
+  document.getElementById('orderSuccessTitle').textContent = currentLang==='zh' ? '下单成功' : 'ご注文を受け付けました';
   document.getElementById('orderSuccessSubtitle').textContent = merged
-    ? (currentLang==='zh' ? '已自动合并到今日订单。' : '本日の注文に自動でまとめました。')
-    : (currentLang==='zh' ? '订单已正式提交，工厂会尽快处理。' : 'ご注文を受け付けました。工場側で順次手配いたします。');
-  document.getElementById('orderSuccessNo').innerHTML = (currentLang==='zh' ? '订单号' : '注文番号') + `<strong>#${orderNo||'-'}</strong>`;
+    ? (currentLang==='zh' ? '商品已追加到今天的订单中。' : '本日のご注文に商品を追加しました。')
+    : (currentLang==='zh' ? '订单已正式提交，我们会尽快为您安排处理。' : 'ご注文を正式に送信しました。順次手配いたします。');
+  document.getElementById('orderSuccessNo').innerHTML = (currentLang==='zh' ? '订单编号' : '注文番号') + `<strong>#${orderNo||'-'}</strong>`;
   document.getElementById('orderSuccessTypeLabel').textContent = currentLang==='zh' ? '处理结果' : '処理結果';
   document.getElementById('orderSuccessType').textContent = merged
-    ? (currentLang==='zh' ? '已并入今日订单' : '当日注文へ追加済み')
-    : (currentLang==='zh' ? '已创建新订单' : '新規注文を作成');
+    ? (currentLang==='zh' ? '已合并到当日订单' : '当日注文へ追加済み')
+    : (currentLang==='zh' ? '新订单已创建' : '新規注文を作成');
   document.getElementById('orderSuccessDateLabel').textContent = currentLang==='zh' ? '订货日期' : '注文日';
   document.getElementById('orderSuccessDate').textContent = orderDate || '-';
-  document.getElementById('orderSuccessTotalLabel').textContent = currentLang==='zh' ? '订单金额' : '注文金額';
+  document.getElementById('orderSuccessTotalLabel').textContent = currentLang==='zh' ? '订单金额' : 'ご注文金額';
   document.getElementById('orderSuccessTotal').textContent = fmt(total || 0) + (currentLang==='zh' ? '（含税）' : '（税込）');
   document.getElementById('orderSuccessNote').textContent = merged
-    ? (currentLang==='zh' ? '系统已自动合并同一天订单，方便工厂统一备货和配送。' : '同日の注文を自動でまとめ、工場側で一括手配しやすくしています。')
-    : (currentLang==='zh' ? '感谢您的订购。如需修改数量或补充备注，请尽快联系工厂。' : 'ご注文ありがとうございます。数量変更や備考追加が必要な場合は、お早めに工場へご連絡ください。');
-  document.getElementById('orderSuccessBtnSecondary').textContent = currentLang==='zh' ? '继续订货' : '続けて注文';
-  document.getElementById('orderSuccessBtnPrimary').textContent = currentLang==='zh' ? '查看订单' : '注文履歴を見る';
+    ? (currentLang==='zh' ? '系统已自动并入同一天的待处理订单，便于工厂统一备货与配送。' : '同日の未処理注文へ自動でまとめました。工場側でまとめて手配されます。')
+    : (currentLang==='zh' ? '感谢您的订购。若需修改数量或补充备注，请在工厂确认前尽快联系。' : 'ご注文ありがとうございます。数量変更や備考追加が必要な場合は、工場確認前にお早めにご連絡ください。');
+  document.getElementById('orderSuccessBtn').textContent = currentLang==='zh' ? '我知道了' : '閉じる';
   openModal('modalOrderSuccess');
-}
-
-function goToOrderHistoryFromSuccess(){
-  closeModal('modalOrderSuccess');
-  switchTab('order-history');
 }
 
 document.querySelectorAll('.modal-overlay').forEach(el => {
@@ -1454,7 +1289,6 @@ const roleTabs = {
 
 function initMainUI() {
   applyLang();
-  updateNavLabels();
   cartDrawerOpen = false;
   setTimeout(applyCartDrawerState, 100);
   const tabs = roleTabs[currentUser.role];
@@ -1480,9 +1314,9 @@ function switchTab(id) {
 function onTabActivate(id) {
   if (id==='order') {
     loadProducts();
-    loadCutoffSetting().then(() => { renderCutoffBanner(); checkReceiptRequired(); });
+    renderCutoffBanner();
+    checkReceiptRequired();
     closeCartDrawer();
-    setTimeout(()=>syncMobileCategorySticky(true), 60);
   }
   if (id==='order-history') { renderOrderHistory(); }
   if (id==='factory-orders') { renderFactoryOrders(); }
@@ -1498,33 +1332,27 @@ let cutoffTime = '17:00';
 
 async function loadCutoffSetting() {
   try {
-    const { data } = await sb.from('settings')
-      .select('value,updated_at')
-      .eq('key','cutoff_time')
-      .order('updated_at', { ascending:false })
-      .limit(1);
-    const row = Array.isArray(data) ? data[0] : data;
-    if (row && /^\d{2}:\d{2}$/.test(String(row.value||''))) cutoffTime = row.value;
+    const { data } = await sb.from('settings').select('value').eq('key','cutoff_time').single();
+    if (data) cutoffTime = data.value;
   } catch {}
 }
 
 function getOrderDate() {
-  return new Date().toISOString().slice(0,10);
+  const now = new Date();
+  const [h,m] = cutoffTime.split(':').map(Number);
+  const passed = now.getHours() > h || (now.getHours()===h && now.getMinutes()>=m);
+  if (passed) { const d=new Date(now); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); }
+  return now.toISOString().slice(0,10);
 }
 
 function renderCutoffBanner() {
   document.getElementById('cutoffDisplay').textContent = cutoffTime;
-  const passed = isCutoffPassed();
+  const now = new Date();
+  const [h,m] = cutoffTime.split(':').map(Number);
+  const passed = now.getHours()>h || (now.getHours()===h && now.getMinutes()>=m);
   document.getElementById('cutoffStatus').innerHTML = passed
-    ? '⛔ <span class="ja">本日の受付終了</span><span class="sep"> / </span><span class="zh">今日已截止</span>'
+    ? '⚠️ 本日締め切り済<br>明日分として処理'
     : '✅ <span class="ja">受付中</span><span class="sep"> / </span><span class="zh">接受中</span>';
-  const btn = document.getElementById('orderSubmitBtn');
-  if (btn) {
-    btn.disabled = passed;
-    btn.innerHTML = passed
-      ? '⛔ <span class="ja">締切後は注文不可</span><span class="zh">截单后不可下单</span>'
-      : '📋 <span class="ja">注文する</span><span class="zh">下单</span>';
-  }
 }
 
 async function saveCutoffTime() {
@@ -1707,32 +1535,115 @@ function tapAddCart() {
 
 let categoryStickyTicking = false;
 function syncMobileCategorySticky(force = false) {
-  const sticky = document.getElementById('orderControlsSticky');
-  const ph = document.getElementById('orderControlsPlaceholder');
-  const cutoff = document.querySelector('#page-order .cutoff-banner');
-  const orderPage = document.getElementById('page-order');
-  if (!sticky || !ph || !cutoff || !orderPage) return;
-  const active = orderPage.classList.contains('active');
-  const mobile = window.innerWidth <= 800;
-  if (!active || !mobile) {
-    sticky.classList.remove('fixed-mobile');
-    ph.classList.remove('active');
-    ph.style.height = '0px';
+  const strip = document.getElementById('categoryStrip');
+  const placeholder = document.getElementById('categoryStripPlaceholder');
+  const pageOrder = document.getElementById('page-order');
+  const cartPanel = document.getElementById('cartPanel');
+  if (!strip || !placeholder || !pageOrder) return;
+
+  const run = () => {
+    categoryStickyTicking = false;
+    const nav = document.querySelector('.top-nav');
+    const navH = nav ? Math.round(nav.getBoundingClientRect().height || nav.offsetHeight || 52) : 52;
+    strip.style.top = navH + 'px';
+    strip.style.setProperty('--category-fixed-top', navH + 'px');
+
+    const isMobile = window.innerWidth <= 800 && pageOrder.classList.contains('active');
+    const cartOpenNow = !!(cartPanel && cartPanel.classList.contains('cart-open'));
+    const parent = strip.parentElement;
+
+    document.body.classList.toggle('cart-open-mobile', cartOpenNow && window.innerWidth <= 800);
+
+    if (!isMobile || !parent || cartOpenNow) {
+      strip.classList.remove('is-fixed-mobile');
+      placeholder.classList.remove('active');
+      placeholder.style.height = '0px';
+      return;
+    }
+
+    const parentRect = parent.getBoundingClientRect();
+    const isFixed = strip.classList.contains('is-fixed-mobile');
+    const stripRect = strip.getBoundingClientRect();
+    const placeholderRect = placeholder.getBoundingClientRect();
+    const fixThreshold = navH + 1;
+    const releaseThreshold = navH + 12;
+    const shouldFix = isFixed ? (placeholderRect.top <= releaseThreshold) : (stripRect.top <= fixThreshold);
+
+    if (shouldFix) {
+      const width = Math.min(parentRect.width, window.innerWidth);
+      strip.style.setProperty('--category-fixed-left', Math.max(0, parentRect.left) + 'px');
+      strip.style.setProperty('--category-fixed-width', width + 'px');
+      strip.style.setProperty('--category-placeholder-height', strip.offsetHeight + 'px');
+      placeholder.style.height = strip.offsetHeight + 'px';
+      placeholder.classList.add('active');
+      strip.classList.add('is-fixed-mobile');
+    } else {
+      strip.classList.remove('is-fixed-mobile');
+      placeholder.classList.remove('active');
+      placeholder.style.height = '0px';
+    }
+  };
+
+  if (force) {
+    run();
     return;
   }
-  const nav = document.querySelector('.top-nav');
-  const navH = nav ? nav.offsetHeight : 54;
-  const cutoffRect = cutoff.getBoundingClientRect();
-  const shouldFix = cutoffRect.bottom <= navH + 8;
-  if (shouldFix) {
-    sticky.classList.add('fixed-mobile');
-    ph.classList.add('active');
-    ph.style.height = sticky.offsetHeight + 'px';
-  } else {
-    sticky.classList.remove('fixed-mobile');
-    ph.classList.remove('active');
-    ph.style.height = '0px';
+  if (categoryStickyTicking) return;
+  categoryStickyTicking = true;
+  requestAnimationFrame(run);
+}
+
+
+// ═══════════════════════════════════════════════
+// CART (localStorage)
+// ═══════════════════════════════════════════════
+let cart = [];
+function getCart() { return ls('cart_'+currentUser?.id) || []; }
+function setCart(c) { ls('cart_'+currentUser?.id, c); cart = c; }
+
+function renderCart() {
+  const c = getCart();
+  const countEl = document.getElementById('cartCount');
+  if (!c.length) {
+    document.getElementById('cartBody').innerHTML = '<div class="cart-empty"><span class="ja">商品をタップして追加</span><br><span class="zh">点击商品加入购物车</span></div>';
+    ['cartSubtotal','cartTaxAmt','cartTotal'].forEach(id=>document.getElementById(id).textContent='¥0');
+    countEl.textContent = '';
+    closeCartDrawer();
+    return;
   }
+  let sub=0, tax=0;
+  document.getElementById('cartBody').innerHTML = c.map(item => {
+    const lp = item.unit_price * item.qty;
+    const lt = Math.round(lp * item.tax_rate / 100);
+    sub += lp; tax += lt;
+    return `<div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.product_emoji} ${item.product_name}</div>
+        <div class="cart-item-sub">${item.product_spec}</div>
+      </div>
+      <div class="qty-wrap">
+        <button class="qty-btn m" onclick="cartQty('${item.product_id}',-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn p" onclick="cartQty('${item.product_id}',1)">＋</button>
+      </div>
+      <div class="cart-line-price">${fmt(lp)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('cartSubtotal').textContent = fmt(sub);
+  document.getElementById('cartTaxAmt').textContent = fmt(tax);
+  document.getElementById('cartTotal').textContent = fmt(sub+tax);
+  countEl.textContent = c.reduce((a,i)=>a+i.qty,0) + '点';
+}
+
+function cartQty(pid, d) {
+  let c = getCart();
+  const idx = c.findIndex(x=>x.product_id===pid);
+  if (idx<0) return;
+  c[idx].qty = Math.max(0, c[idx].qty+d);
+  if (c[idx].qty===0) c.splice(idx,1);
+  setCart(c);
+  renderCart();
+  renderProducts();
 }
 
 // ═══════════════════════════════════════════════
@@ -1759,7 +1670,6 @@ async function checkReceiptRequired() {
 async function submitOrder() {
   const c = getCart();
   if (!c.length) { alert((currentLang==='zh'?'购物车为空':'カートが空です')); return; }
-  if (isCutoffPassed()) { alert(currentLang==='zh'?'已过今日截单时间，暂不可下单':'本日の締切時間を過ぎたため注文できません'); return; }
 
   // block if unconfirmed delivery
   const { data:unconf } = await sb.from('orders')
@@ -1768,7 +1678,7 @@ async function submitOrder() {
 
   showLoading((currentLang==='zh'?'提交中...':'注文送信中...'));
   const oDate = getOrderDate();
-  const note = cleanNote(document.getElementById('orderNote').value);
+  const note = document.getElementById('orderNote').value;
 
   // Check same-day order
   const { data:sameDay } = await sb.from('orders')
@@ -1891,8 +1801,24 @@ async function renderOrderHistory() {
         <span style="color:var(--text3);font-size:12px;">▼</span>
       </div>
       <div class="order-body" id="oh_${order.id}">
-        ${cleanNote(order.note)?`<div class="alert alert-info history-note" style="margin-bottom:12px;">📝 ${escapeHtml(cleanNote(order.note))}</div>`:''}
-        ${renderHistoryItems(order)}
+        ${order.note?`<div class="alert alert-info" style="margin-bottom:12px;">📝 ${order.note}</div>`:''}
+        <div class="table-wrap">
+          <table><thead><tr><th>商品</th><th><span class="ja">規格</span><span class="sep"> / </span><span class="zh">规格</span></th><th>数量</th><th>単価</th><th>金額</th><th><span class="ja">欠品</span><span class="sep"> / </span><span class="zh">缺货</span></th><th style="text-align:center;width:52px;">確認<br><span style="font-size:10px;font-weight:400;color:#aaa;">核对</span></th></tr></thead>
+          <tbody>${(order.order_items||[]).map(i=>`
+            <tr style="${i.shortage?'background:var(--red-light);':''}" id="hist_row_${i.id}">
+              <td>${i.product_emoji||'📦'} ${i.product_name}</td>
+              <td>${i.product_spec}</td><td>${i.qty}</td>
+              <td>${fmt(i.unit_price)}</td>
+              <td>${fmt(i.unit_price*i.qty)}</td>
+              <td>${i.shortage?`<span class="badge badge-red">欠品${i.shortage_note?'：'+i.shortage_note:''}</span>`:'—'}</td>
+              <td style="text-align:center;">
+                <div id="hc_${i.id}" onclick="toggleHistCheck('${i.id}')"
+                  style="width:28px;height:28px;border:2px solid #ccc;border-radius:6px;
+                  display:inline-flex;align-items:center;justify-content:center;
+                  cursor:pointer;font-size:16px;transition:all .15s;background:white;user-select:none;"></div>
+              </td>
+            </tr>`).join('')}</tbody></table>
+        </div>
         <div style="text-align:right;margin-top:12px;font-size:13px;color:var(--text2);">
           ${currentLang==='zh'?'小计':'小計'} ${fmt(order.subtotal)} + ${currentLang==='zh'?'税':'税'} ${fmt(order.tax_total)} = <strong style="font-size:16px;color:var(--red);">${fmt(order.total)}</strong>
         </div>
@@ -2862,8 +2788,10 @@ let currentLang = localStorage.getItem('fos_lang') || 'ja';
 function applyLang() {
   document.body.classList.remove('lang-ja','lang-zh');
   document.body.classList.add('lang-'+currentLang);
-  const langSel = document.getElementById('langSelect');
-  if (langSel) langSel.value = currentLang;
+  const lbJa = document.getElementById('lbJa');
+  const lbZh = document.getElementById('lbZh');
+  if (lbJa) lbJa.classList.toggle('active', currentLang==='ja');
+  if (lbZh) lbZh.classList.toggle('active', currentLang==='zh');
   updateNavLabels();
   const lbl = document.getElementById('loginLangLabel');
   if (lbl) lbl.textContent = currentLang==='ja' ? '中文' : '日本語';
@@ -2893,26 +2821,20 @@ function toggleLangLogin() {
   const lbl = document.getElementById('loginLangLabel');
   if (lbl) lbl.textContent = currentLang==='ja' ? '中文' : '日本語';
 }
-function setMainLang(v) {
-  currentLang = v || 'ja';
+function toggleLang() {
+  currentLang = currentLang==='ja' ? 'zh' : 'ja';
   localStorage.setItem('fos_lang', currentLang);
   applyLang();
   buildCategoryFilter();
-  updateNavLabels();
-  if (document.getElementById('page-order-history')?.classList.contains('active')) renderOrderHistory();
-}
-function toggleLang() {
-  setMainLang(currentLang==='ja' ? 'zh' : 'ja');
 }
 function updateNavLabels() {
-  const compact = window.innerWidth <= 480;
   const tabLabels = {
-    order:    { ja: compact?'注文':'🛒 注文', zh: compact?'订货':'🛒 订货' },
-    'order-history': { ja: compact?'履歴':'📋 履歴', zh: compact?'记录':'📋 记录' },
-    'factory-orders': { ja: compact?'受注':'📦 受注', zh: compact?'订单':'📦 订单' },
-    'factory-products': { ja: compact?'商品':'🏷️ 商品', zh: compact?'商品':'🏷️ 商品' },
-    'factory-settings': { ja: compact?'設定':'⚙️ 設定', zh: compact?'设置':'⚙️ 设置' },
-    delivery: { ja: compact?'配送':'🚚 配送', zh: compact?'配送':'🚚 配送' },
+    order:    { ja:'🛒 注文', zh:'🛒 订货' },
+    'order-history': { ja:'📋 履歴', zh:'📋 记录' },
+    'factory-orders': { ja:'📦 受注', zh:'📦 订单' },
+    'factory-products': { ja:'🏷️ 商品', zh:'🏷️ 商品' },
+    'factory-settings': { ja:'⚙️ 設定', zh:'⚙️ 设置' },
+    delivery: { ja:'🚚 配送', zh:'🚚 配送' },
   };
   if (!currentUser) return;
   const tabs = roleTabs[currentUser.role];
@@ -3325,4 +3247,3 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 </script>
 </body>
 </html>
-window.addEventListener('resize', ()=>{ updateNavLabels(); if (document.getElementById('page-order-history')?.classList.contains('active')) renderOrderHistory(); });
