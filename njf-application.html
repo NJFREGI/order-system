@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NJF收银系统 申込フォーム</title>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --primary: #0f62fe;
+      --primary-dark: #0a4bd2;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #d1d5db;
+      --ok: #047857;
+      --warn: #b91c1c;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "PingFang SC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 14px; }
+    .hero { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .hero h1 { margin: 0 0 8px; font-size: 20px; }
+    .hero p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .title { font-size: 16px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+    .title::before { content: ""; width: 4px; height: 16px; border-radius: 4px; background: var(--primary); }
+
+    .checklist { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+    .check-item { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: flex-start; }
+    .check-item input { margin-top: 2px; }
+    .check-item span { font-size: 13px; line-height: 1.45; }
+
+    .grid { display: grid; gap: 10px; }
+    .grid.two { grid-template-columns: 1fr; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    input, textarea, button, select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
+      font-size: 14px; font-family: inherit; background: #fff;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    input:disabled { background: #f3f4f6; }
+
+    .btn-row { display: flex; gap: 8px; }
+    .btn { border: none; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; }
+    .btn:hover { background: var(--primary-dark); }
+    .btn.secondary { background: #e5e7eb; color: #111827; }
+
+    .pricing-table { width: 100%; border-collapse: collapse; }
+    .pricing-table th, .pricing-table td { border-bottom: 1px solid var(--line); padding: 8px 4px; text-align: left; font-size: 13px; }
+    .pricing-table th { color: var(--muted); font-size: 12px; }
+    .pricing-table input { padding: 8px; }
+    .money { text-align: right; white-space: nowrap; }
+
+    .sum-box { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+    .sum-row { display: flex; justify-content: space-between; font-size: 14px; }
+    .sum-row strong { font-size: 16px; color: var(--ok); }
+
+    .sign-wrap { border: 1px dashed var(--line); border-radius: 10px; padding: 8px; background: #fafafa; }
+    #signatureCanvas { width: 100%; height: 180px; border-radius: 8px; border: 1px solid #e5e7eb; background: white; touch-action: none; }
+
+    .status { font-size: 12px; margin-top: 8px; }
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+
+    .hidden { display: none; }
+
+    @media (min-width: 640px) {
+      .wrap { padding: 20px; }
+      .grid.two { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>NJF REGI 契約申込フォーム（手机版）</h1>
+      <p>先勾选上方事项确认，再填写公司/店铺信息。输入日本邮编后可自动取得地址，再手动补充门牌号。最后签名并送信（生成PDF）。</p>
+    </section>
+
+    <form id="contractForm">
+      <section class="card">
+        <h2 class="title">1) 事项确认（全部确认后解锁）</h2>
+        <ul class="checklist" id="checklist"></ul>
+        <p id="checkHint" class="status warn">请先确认所有事项。</p>
+      </section>
+
+      <section class="card">
+        <h2 class="title">2) 契约公司信息</h2>
+        <div class="grid two">
+          <div><label>会社名</label><input name="companyName" required disabled></div>
+          <div><label>法人番号（任意）</label><input name="companyNumber" disabled></div>
+          <div><label>担当者名</label><input name="companyContact" required disabled></div>
+          <div><label>电话</label><input name="companyPhone" required disabled></div>
+          <div><label>邮箱</label><input name="companyEmail" type="email" required disabled></div>
+        </div>
+        <div class="grid two" style="margin-top:10px;">
+          <div>
+            <label>邮编 (例: 1000001)</label>
+            <div class="btn-row">
+              <input name="companyZip" maxlength="8" placeholder="1000001" disabled>
+              <button class="btn secondary" type="button" id="lookupCompany">地址取得</button>
+            </div>
+          </div>
+          <div><label>都道府県・市区町村（自动）</label><input name="companyAddrAuto" disabled></div>
+          <div style="grid-column: 1 / -1;"><label>门牌号・楼层（手动）</label><input name="companyAddrDetail" disabled></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="title">3) 契约店铺信息</h2>
+        <div class="btn-row" style="margin-bottom:10px;">
+          <button class="btn secondary" type="button" id="sameAddress">店铺地址同上</button>
+        </div>
+        <div class="grid two">
+          <div><label>店铺名</label><input name="shopName" required disabled></div>
+          <div><label>店铺电话</label><input name="shopPhone" required disabled></div>
+          <div>
+            <label>店铺邮编</label>
+            <div class="btn-row">
+              <input name="shopZip" maxlength="8" placeholder="1000001" disabled>
+              <button class="btn secondary" type="button" id="lookupShop">地址取得</button>
+            </div>
+          </div>
+          <div><label>都道府県・市区町村（自动）</label><input name="shopAddrAuto" disabled></div>
+          <div style="grid-column: 1 / -1;"><label>门牌号・楼层（手动）</label><input name="shopAddrDetail" disabled></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="title">4) 设备与服务（自动合计）</h2>
+        <table class="pricing-table" id="pricingTable">
+          <thead>
+            <tr><th>项目</th><th class="money">单价(¥)</th><th>数量</th><th class="money">小计(¥)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="sum-box">
+          <div class="sum-row"><span>税前合计</span><span id="subtotal">¥0</span></div>
+          <div class="sum-row"><span>税额（10%）</span><span id="tax">¥0</span></div>
+          <div class="sum-row"><span>总计</span><strong id="total">¥0</strong></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="title">5) 顾客签名与送信</h2>
+        <div class="grid two">
+          <div><label>送信先邮箱（指定收件地址）</label><input name="toEmail" type="email" required disabled></div>
+          <div><label>签署日期</label><input name="signedDate" type="date" required disabled></div>
+        </div>
+        <div style="margin-top:10px;"><label>备注（任意）</label><textarea name="notes" disabled></textarea></div>
+        <div class="sign-wrap" style="margin-top:10px;">
+          <canvas id="signatureCanvas"></canvas>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn secondary" type="button" id="clearSign">清除签名</button>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn" type="submit" id="submitBtn" disabled>送信（生成PDF）</button>
+        </div>
+        <p class="status" id="sendStatus"></p>
+      </section>
+    </form>
+  </main>
+
+  <script>
+    const CHECK_ITEMS = [
+      "本サービスの契約期間は2年間であり、自動更新されること。",
+      "利用開始日は設置完了日基準となる場合があること。",
+      "途中解約時に最低利用期間分の費用が必要な場合があること。",
+      "推奨外の接続機器では動作保証外になる場合があること。",
+      "データ保管期限およびバックアップ責任に同意すること。"
+    ];
+
+    const PRODUCTS = [
+      { name: "NJF POS 本体", price: 78000, qty: 1 },
+      { name: "キャッシュドロワ", price: 12000, qty: 1 },
+      { name: "レシートプリンタ", price: 28000, qty: 1 },
+      { name: "月額クラウド利用料", price: 9800, qty: 1 },
+      { name: "保守サポート", price: 5000, qty: 1 }
+    ];
+
+    // 若需要自动邮件发送，请把这里替换成你自己的API。
+    // API 需接收 multipart/form-data: toEmail, file(PDF)
+    const SEND_ENDPOINT = "";
+
+    const form = document.getElementById("contractForm");
+    const checklistEl = document.getElementById("checklist");
+    const checkHint = document.getElementById("checkHint");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusEl = document.getElementById("sendStatus");
+    const priceBody = document.querySelector("#pricingTable tbody");
+    const subtotalEl = document.getElementById("subtotal");
+    const taxEl = document.getElementById("tax");
+    const totalEl = document.getElementById("total");
+
+    function formatJPY(num) {
+      return new Intl.NumberFormat("ja-JP").format(num);
+    }
+
+    function renderChecklist() {
+      CHECK_ITEMS.forEach((text, i) => {
+        const li = document.createElement("li");
+        li.className = "check-item";
+        li.innerHTML = `<input type="checkbox" class="confirm-check" id="c${i}"><span>${text}</span>`;
+        checklistEl.appendChild(li);
+      });
+    }
+
+    function setFormEnabled(enabled) {
+      [...form.querySelectorAll("input, textarea")].forEach((el) => {
+        if (!["checkbox", "button", "submit"].includes(el.type)) {
+          el.disabled = !enabled;
+        }
+      });
+      submitBtn.disabled = !enabled;
+      checkHint.textContent = enabled ? "已完成确认，可以填写下方表格。" : "请先确认所有事项。";
+      checkHint.className = `status ${enabled ? "ok" : "warn"}`;
+      if (enabled && !form.signedDate.value) {
+        form.signedDate.value = new Date().toISOString().slice(0, 10);
+      }
+    }
+
+    function checkAllConfirmed() {
+      const allChecked = [...document.querySelectorAll(".confirm-check")].every((el) => el.checked);
+      setFormEnabled(allChecked);
+    }
+
+    async function lookupAddress(zip) {
+      const cleaned = (zip || "").replace(/[^0-9]/g, "");
+      if (cleaned.length !== 7) {
+        throw new Error("邮编需为7位数字");
+      }
+      const url = `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${cleaned}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.results || !data.results[0]) {
+        throw new Error("未找到该邮编地址");
+      }
+      const r = data.results[0];
+      return `${r.address1}${r.address2}${r.address3}`;
+    }
+
+    function bindAddressLookup(zipName, autoName, btnId) {
+      const zipInput = form[zipName];
+      const autoInput = form[autoName];
+      const btn = document.getElementById(btnId);
+
+      async function doLookup() {
+        try {
+          autoInput.value = "検索中...";
+          const address = await lookupAddress(zipInput.value);
+          autoInput.value = address;
+        } catch (error) {
+          autoInput.value = "";
+          statusEl.textContent = `地址取得失败: ${error.message}`;
+          statusEl.className = "status warn";
+        }
+      }
+
+      btn.addEventListener("click", doLookup);
+      zipInput.addEventListener("blur", () => {
+        if (zipInput.value.replace(/[^0-9]/g, "").length === 7) doLookup();
+      });
+    }
+
+    function renderProducts() {
+      PRODUCTS.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td class="money">${formatJPY(item.price)}</td>
+          <td><input type="number" min="0" value="${item.qty}" data-index="${index}" class="qty-input" disabled></td>
+          <td class="money" id="line-${index}">0</td>
+        `;
+        priceBody.appendChild(tr);
+      });
+      calcTotals();
+    }
+
+    function calcTotals() {
+      let subtotal = 0;
+      const qtyInputs = [...document.querySelectorAll(".qty-input")];
+      qtyInputs.forEach((input) => {
+        const index = Number(input.dataset.index);
+        const qty = Math.max(0, Number(input.value || 0));
+        const line = PRODUCTS[index].price * qty;
+        subtotal += line;
+        document.getElementById(`line-${index}`).textContent = formatJPY(line);
+      });
+      const tax = Math.round(subtotal * 0.1);
+      const total = subtotal + tax;
+      subtotalEl.textContent = `¥${formatJPY(subtotal)}`;
+      taxEl.textContent = `¥${formatJPY(tax)}`;
+      totalEl.textContent = `¥${formatJPY(total)}`;
+      return { subtotal, tax, total };
+    }
+
+    function setProductInputsEnabled(enabled) {
+      document.querySelectorAll(".qty-input").forEach((input) => {
+        input.disabled = !enabled;
+      });
+    }
+
+    function initSignature() {
+      const canvas = document.getElementById("signatureCanvas");
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+
+      function resizeCanvas() {
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#111827";
+      }
+
+      function pointFromEvent(event) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = event.touches ? event.touches[0] : event;
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+      }
+
+      function start(event) {
+        drawing = true;
+        const p = pointFromEvent(event);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+      }
+
+      function move(event) {
+        if (!drawing) return;
+        event.preventDefault();
+        const p = pointFromEvent(event);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+
+      function end() { drawing = false; }
+
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      canvas.addEventListener("mouseup", end);
+      canvas.addEventListener("mouseleave", end);
+      canvas.addEventListener("touchstart", start, { passive: true });
+      canvas.addEventListener("touchmove", move, { passive: false });
+      canvas.addEventListener("touchend", end);
+
+      document.getElementById("clearSign").addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      return canvas;
+    }
+
+    function buildPdfData() {
+      const totals = calcTotals();
+      const payload = {
+        company: {
+          name: form.companyName.value,
+          number: form.companyNumber.value,
+          contact: form.companyContact.value,
+          phone: form.companyPhone.value,
+          email: form.companyEmail.value,
+          zip: form.companyZip.value,
+          auto: form.companyAddrAuto.value,
+          detail: form.companyAddrDetail.value
+        },
+        shop: {
+          name: form.shopName.value,
+          phone: form.shopPhone.value,
+          zip: form.shopZip.value,
+          auto: form.shopAddrAuto.value,
+          detail: form.shopAddrDetail.value
+        },
+        items: [...document.querySelectorAll(".qty-input")].map((input, i) => ({
+          name: PRODUCTS[i].name,
+          unitPrice: PRODUCTS[i].price,
+          qty: Number(input.value || 0),
+          line: PRODUCTS[i].price * Number(input.value || 0)
+        })),
+        totals,
+        signedDate: form.signedDate.value,
+        notes: form.notes.value
+      };
+      return payload;
+    }
+
+    function generatePdf(canvas) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const d = buildPdfData();
+      let y = 12;
+      doc.setFontSize(14);
+      doc.text("NJF REGI 契約申込書", 10, y);
+      y += 8;
+
+      doc.setFontSize(10);
+      doc.text(`会社名: ${d.company.name}`, 10, y); y += 6;
+      doc.text(`会社住所: ${d.company.auto} ${d.company.detail}`, 10, y); y += 6;
+      doc.text(`担当者: ${d.company.contact} / TEL: ${d.company.phone}`, 10, y); y += 6;
+      doc.text(`店名: ${d.shop.name} / TEL: ${d.shop.phone}`, 10, y); y += 6;
+      doc.text(`店铺地址: ${d.shop.auto} ${d.shop.detail}`, 10, y); y += 8;
+
+      doc.text("設備・サービス", 10, y); y += 6;
+      d.items.forEach((item) => {
+        if (item.qty === 0) return;
+        doc.text(`${item.name}  単価:${item.unitPrice}  数量:${item.qty}  小計:${item.line}`, 10, y);
+        y += 5;
+      });
+
+      y += 4;
+      doc.text(`税前: ${d.totals.subtotal} / 税: ${d.totals.tax} / 合計: ${d.totals.total}`, 10, y);
+      y += 6;
+      doc.text(`署名日: ${d.signedDate}`, 10, y);
+
+      if (d.notes) {
+        y += 6;
+        doc.text(`備考: ${d.notes}`, 10, y, { maxWidth: 190 });
+      }
+
+      const signImage = canvas.toDataURL("image/png");
+      y = Math.max(y + 12, 180);
+      doc.text("署名:", 10, y);
+      doc.addImage(signImage, "PNG", 24, y - 18, 70, 24);
+
+      return doc;
+    }
+
+    async function sendPdf(pdfBlob, toEmail) {
+      if (!SEND_ENDPOINT) return { sent: false, reason: "未配置发送API，已仅生成下载文件。" };
+      const data = new FormData();
+      data.append("toEmail", toEmail);
+      data.append("file", pdfBlob, "njf-contract.pdf");
+
+      const res = await fetch(SEND_ENDPOINT, { method: "POST", body: data });
+      if (!res.ok) throw new Error("邮件发送接口返回失败");
+      return { sent: true };
+    }
+
+    renderChecklist();
+    renderProducts();
+    const signCanvas = initSignature();
+
+    document.querySelectorAll(".confirm-check").forEach((el) => el.addEventListener("change", () => {
+      checkAllConfirmed();
+      setProductInputsEnabled([...document.querySelectorAll(".confirm-check")].every((x) => x.checked));
+    }));
+
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("qty-input")) calcTotals();
+    });
+
+    bindAddressLookup("companyZip", "companyAddrAuto", "lookupCompany");
+    bindAddressLookup("shopZip", "shopAddrAuto", "lookupShop");
+
+    document.getElementById("sameAddress").addEventListener("click", () => {
+      form.shopZip.value = form.companyZip.value;
+      form.shopAddrAuto.value = form.companyAddrAuto.value;
+      form.shopAddrDetail.value = form.companyAddrDetail.value;
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      statusEl.textContent = "正在生成PDF...";
+      statusEl.className = "status";
+
+      const doc = generatePdf(signCanvas);
+      const blob = doc.output("blob");
+      doc.save("njf-contract.pdf");
+
+      try {
+        const result = await sendPdf(blob, form.toEmail.value);
+        if (result.sent) {
+          statusEl.textContent = "送信完成：PDF已生成并发送到指定邮箱。";
+          statusEl.className = "status ok";
+        } else {
+          statusEl.textContent = `PDF已下载。${result.reason}`;
+          statusEl.className = "status warn";
+        }
+      } catch (error) {
+        statusEl.textContent = `PDF已下载，但送信失败：${error.message}`;
+        statusEl.className = "status warn";
+      }
+    });
+  </script>
+</body>
+</html>
